@@ -1,7 +1,9 @@
+// load dependencies
 var path = require('path');
 var axios = require('axios');
-
+// helper function to filter an array of claims for only free, public claims
 function filterForFreePublicClaims(claimsListArray){
+	console.log(">> claimsListArray:", claimsListArray);
 	if (!claimsListArray) {
 		return null;
 	};
@@ -12,91 +14,123 @@ function filterForFreePublicClaims(claimsListArray){
 	return freePublicClaims;
 }
 
-// routes to export
-module.exports = function(app){
-	app.get("/:claim", function(req, res){
-    	var claim = req.params.claim;
-		if (claim === "coconuts"){
-			res.sendFile(path.join(__dirname, '../public', 'coconuts.jpg'));
-		} else {
-			// make a call to the daemon to get the claims list 
-			axios.post('http://localhost:5279/lbryapi', {
-					method: "claim_list",
-					params: {
-						name: claim
-					}
-				}
-			).then(function (response) {
-				console.log("claim_list success");
-				//filter the claims for free, public claims 
-				var freePublicClaims = [];
-				freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
-				//'get' the images to display them.
-				axios.post('http://localhost:5279/lbryapi', {
-						method: "get",
-						params: {
-							uri: freePublicClaims[0].name
-						}
-					}
-				).then(function (getResponse) {
-					console.log("'get claim' success...");
-					console.log(getResponse.data);
-					console.log("dl path =", getResponse.data.result.download_path)
-					// return the claim we got 
-					res.sendFile(getResponse.data.result.download_path);
-				}).catch(function(getError){
-					console.log(getError.data);
-					res.send(getError.data);
-				})
-			}).catch(function(error){
-				console.log(error.data);
-				res.send(error.data);
-			})
-		}
-	});
-
-	app.get("/claim_list/:claim", function(req, res){
-		var claim = req.params.claim;
-		// make a call to the daemon
-		axios.post('http://localhost:5279/lbryapi', {
-				method: "claim_list",
-				params: {
-					name: claim
-				}
+function serveClaimBasedOnNameOnly(claimName, res){
+	// make a call to the daemon to get the claims list 
+	axios.post('http://localhost:5279/lbryapi', {
+			method: "claim_list",
+			params: {
+				name: claimName
 			}
-		).then(function (response) {
-			console.log("success");
-			printClaimIdFromClaimsList(response.data.result.claims);
-			res.send(response.data);
-		}).catch(function(error){
-			console.log(error.data);
-			res.send(error.data);
-		})
-	});
-
-	app.get("/get/:name", function(req, res){
-    	var name = req.params.name;
-		//'get' the image to display them.
+		}
+	).then(function (response) {
+		console.log(">> Claim_list success");
+		console.log(">> Number of claims:", response.data.result.claims.length)
+		// return early if no claims were found
+		if (response.data.result.claims.length === 0){
+			res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+			return;
+		}
+		// filter the claims to return free, public claims 
+		var freePublicClaims = [];
+		freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
+		// return early if no free, public claims were found
+		if (!freePublicClaims || (freePublicClaims.length === 0)){
+			res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+			return;
+		}
+		console.log(">> free public claims", freePublicClaims);
+		var freePublicClaimUri = freePublicClaims[0].name + "#" + freePublicClaims[0].claim_id;
+		console.log(">> your free public claim uri:", freePublicClaimUri);
+		// fetch the image to display
 		axios.post('http://localhost:5279/lbryapi', {
 				method: "get",
 				params: {
-					uri: name
+					uri: freePublicClaimUri
 				}
 			}
 		).then(function (getResponse) {
-			console.log("'get claim' success...");
-			console.log(getResponse.data);
-			console.log("dl path =", getResponse.data.result.download_path)
+			console.log(">> 'get claim' success...");
+			console.log(">> response data:", getResponse.data);
+			console.log(">> dl path =", getResponse.data.result.download_path)
 			// return the claim we got 
 			res.sendFile(getResponse.data.result.download_path);
 		}).catch(function(getError){
-			console.log(getError.data);
-			res.send(getError.data);
+			console.log(">> /c/ 'get' error:", getError);
+			res.send(getError);
 		})
-	});
+	}).catch(function(error){
+		console.log(">> /c/ error:", error);
+		res.send(error);
+	})
+}
 
-	app.use("*", function(req, res){
-    	//res.sendFile('index.html');
+function serveClaimBasedOnUri(claimUri){
+	//
+}
+
+function serveAllClaims(claimName){
+	// make a call to the daemon to get the claims list 
+	axios.post('http://localhost:5279/lbryapi', {
+			method: "claim_list",
+			params: {
+				name: claimName
+			}
+		}
+	).then(function (response) {
+		console.log(">> Claim_list success");
+		console.log(">> Number of claims:", response.data.result.claims.length)
+		// return early if no claims were found
+		if (response.data.result.claims.length === 0){
+			res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+			return;
+		}
+		// filter the claims to return free, public claims 
+		var freePublicClaims = [];
+		freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
+		// return early if no free, public claims were found
+		if (!freePublicClaims || (freePublicClaims.length === 0)){
+			res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+			return;
+		}
+		console.log(">> Number of free public claims:", freePublicClaims.length);
+		res.send(freePublicClaims); // Note: add code to display a page of all these claims 
+	}).catch(function(error){
+		console.log(">> /c/ error:", error);
+		res.send(error);
+	})
+}
+
+// routes to export
+module.exports = function(app){
+	// route to fetch one free public claim 
+	app.get("/favicon.ico", function(req, res){
+		console.log(">> GET request on favicon.ico");
+		res.sendFile(path.join(__dirname, '../public', 'favicon.ico'));
+	});
+	// route to fetch one free public claim 
+	app.get("/:name/all", function(req, res){
+    	var name = req.params.name;
+		console.log(">> GET request on /" + name + " (all)");
+		res.send("all claims");
+	});
+	// route to fetch one free public claim 
+	app.get("/:name/:claim_id", function(req, res){
+    	var uri = req.params.name + "#" + req.params.claim_id;
+		console.log(">> GET request on /" + uri);
+		res.send(uri);
+	});
+	// route to fetch one free public claim 
+	app.get("/:name", function(req, res){
+    	var name = req.params.name;
+		console.log(">> GET request on /" + name)
+		serveClaimBasedOnNameOnly(name, res);
+	});
+	// route for the home page
+	app.get("/", function(req, res){
 		res.sendFile(path.join(__dirname, '../public', 'index.html'));
+	});
+	// a catch-all route if someone visits a page that does not exist
+	app.use("*", function(req, res){
+		res.sendFile(path.join(__dirname, '../public', 'fourOhfour.html'));
 	});
 }
