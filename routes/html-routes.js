@@ -1,6 +1,7 @@
+// load dependencies
 var path = require('path');
 var axios = require('axios');
-
+// helper function to filter an array of claims for only free, public claims
 function filterForFreePublicClaims(claimsListArray){
 	if (!claimsListArray) {
 		return null;
@@ -11,7 +12,6 @@ function filterForFreePublicClaims(claimsListArray){
 	});
 	return freePublicClaims;
 }
-
 // routes to export
 module.exports = function(app){
 	// route to fetch one free public claim 
@@ -25,11 +25,12 @@ module.exports = function(app){
 				}
 			}
 		).then(function (response) {
-			console.log("claim_list success");
-			//filter the claims for free, public claims 
+			console.log(">> Claim_list success");
+			console.log(">> Number of claims:", response.data.result.claims.length)
+			//filter the claims to return free, public claims 
 			var freePublicClaims = [];
 			freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
-			//'get' the images to display them.
+			//fetch the image to display
 			axios.post('http://localhost:5279/lbryapi', {
 					method: "get",
 					params: {
@@ -37,17 +38,17 @@ module.exports = function(app){
 					}
 				}
 			).then(function (getResponse) {
-				console.log("'get claim' success...");
-				console.log(getResponse.data);
-				console.log("dl path =", getResponse.data.result.download_path)
+				console.log(">> 'get claim' success...");
+				console.log(">> response data:", getResponse.data);
+				console.log(">> dl path =", getResponse.data.result.download_path)
 				// return the claim we got 
 				res.sendFile(getResponse.data.result.download_path);
 			}).catch(function(getError){
-				console.log(getError.data);
+				console.log(">> 'get' error:", getError.data);
 				res.send(getError.data);
 			})
 		}).catch(function(error){
-			console.log(error.data);
+			console.log(">> 'get' error:", error.data);
 			res.send(error.data);
 		})
 	});
@@ -91,9 +92,16 @@ module.exports = function(app){
 			res.send(getError.data);
 		})
 	});
-
-	app.use("/", function(req, res){
-    	//res.sendFile('index.html');
+	// route for help docs
+	app.get("/help/docs", function(req, res){
+		res.sendFile(path.join(__dirname, '../public', 'docs.html'));
+	});
+	// route for the home page
+	app.get("/", function(req, res){
 		res.sendFile(path.join(__dirname, '../public', 'index.html'));
+	});
+	// a catch-all route if someone visits a page that does not exist
+	app.use("*", function(req, res){
+		res.sendFile(path.join(__dirname, '../public', 'fourOhfour.html'));
 	});
 }
