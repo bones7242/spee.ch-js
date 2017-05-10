@@ -3,6 +3,7 @@ var path = require('path');
 var axios = require('axios');
 // helper function to filter an array of claims for only free, public claims
 function filterForFreePublicClaims(claimsListArray){
+	console.log(">> claimsListArray:", claimsListArray);
 	if (!claimsListArray) {
 		return null;
 	};
@@ -15,7 +16,7 @@ function filterForFreePublicClaims(claimsListArray){
 // routes to export
 module.exports = function(app){
 	// route to fetch one free public claim 
-	app.get("/:claim", function(req, res){
+	app.get("/c/:claim", function(req, res){
     	var claim = req.params.claim;
 		// make a call to the daemon to get the claims list 
 		axios.post('http://localhost:5279/lbryapi', {
@@ -27,10 +28,21 @@ module.exports = function(app){
 		).then(function (response) {
 			console.log(">> Claim_list success");
 			console.log(">> Number of claims:", response.data.result.claims.length)
-			//filter the claims to return free, public claims 
+			// return early if no claims were found
+			if (response.data.result.claims.length === 0){
+				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				return;
+			}
+			// filter the claims to return free, public claims 
 			var freePublicClaims = [];
 			freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
-			//fetch the image to display
+			// return early if no free, public claims were found
+			if (!freePublicClaims || (freePublicClaims.length === 0)){
+				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				return;
+			}
+			console.log(">> free public claims", freePublicClaims);
+			// fetch the image to display
 			axios.post('http://localhost:5279/lbryapi', {
 					method: "get",
 					params: {
@@ -44,31 +56,12 @@ module.exports = function(app){
 				// return the claim we got 
 				res.sendFile(getResponse.data.result.download_path);
 			}).catch(function(getError){
-				console.log(">> 'get' error:", getError.data);
-				res.send(getError.data);
+				console.log(">> /c/ 'get' error:", getError);
+				res.send(getError);
 			})
 		}).catch(function(error){
-			console.log(">> 'get' error:", error.data);
-			res.send(error.data);
-		})
-	});
-	// route to return claim list in json
-	app.get("/claim_list/:claim", function(req, res){
-		var claim = req.params.claim;
-		// make a call to the daemon
-		axios.post('http://localhost:5279/lbryapi', {
-				method: "claim_list",
-				params: {
-					name: claim
-				}
-			}
-		).then(function (response) {
-			console.log("success");
-			printClaimIdFromClaimsList(response.data.result.claims);
-			res.send(response.data);
-		}).catch(function(error){
-			console.log(error.data);
-			res.send(error.data);
+			console.log(">> /c/ error:", error);
+			res.send(error);
 		})
 	});
 	// route to fetch a claim by uri
@@ -88,8 +81,8 @@ module.exports = function(app){
 			// return the claim we got 
 			res.sendFile(getResponse.data.result.download_path);
 		}).catch(function(getError){
-			console.log(getError.data);
-			res.send(getError.data);
+			console.log(">> /get/ 'get' error:", getError);
+			res.send(getError);
 		})
 	});
 	// route for help docs
