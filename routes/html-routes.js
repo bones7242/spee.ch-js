@@ -14,47 +14,44 @@ function filterForFreePublicClaims(claimsListArray){
 
 // routes to export
 module.exports = function(app){
+	// route to fetch one free public claim 
 	app.get("/:claim", function(req, res){
     	var claim = req.params.claim;
-		if (claim === "coconuts"){
-			res.sendFile(path.join(__dirname, '../public', 'coconuts.jpg'));
-		} else {
-			// make a call to the daemon to get the claims list 
+		// make a call to the daemon to get the claims list 
+		axios.post('http://localhost:5279/lbryapi', {
+				method: "claim_list",
+				params: {
+					name: claim
+				}
+			}
+		).then(function (response) {
+			console.log("claim_list success");
+			//filter the claims for free, public claims 
+			var freePublicClaims = [];
+			freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
+			//'get' the images to display them.
 			axios.post('http://localhost:5279/lbryapi', {
-					method: "claim_list",
+					method: "get",
 					params: {
-						name: claim
+						uri: freePublicClaims[0].name
 					}
 				}
-			).then(function (response) {
-				console.log("claim_list success");
-				//filter the claims for free, public claims 
-				var freePublicClaims = [];
-				freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
-				//'get' the images to display them.
-				axios.post('http://localhost:5279/lbryapi', {
-						method: "get",
-						params: {
-							uri: freePublicClaims[0].name
-						}
-					}
-				).then(function (getResponse) {
-					console.log("'get claim' success...");
-					console.log(getResponse.data);
-					console.log("dl path =", getResponse.data.result.download_path)
-					// return the claim we got 
-					res.sendFile(getResponse.data.result.download_path);
-				}).catch(function(getError){
-					console.log(getError.data);
-					res.send(getError.data);
-				})
-			}).catch(function(error){
-				console.log(error.data);
-				res.send(error.data);
+			).then(function (getResponse) {
+				console.log("'get claim' success...");
+				console.log(getResponse.data);
+				console.log("dl path =", getResponse.data.result.download_path)
+				// return the claim we got 
+				res.sendFile(getResponse.data.result.download_path);
+			}).catch(function(getError){
+				console.log(getError.data);
+				res.send(getError.data);
 			})
-		}
+		}).catch(function(error){
+			console.log(error.data);
+			res.send(error.data);
+		})
 	});
-
+	// route to return claim list in json
 	app.get("/claim_list/:claim", function(req, res){
 		var claim = req.params.claim;
 		// make a call to the daemon
@@ -73,7 +70,7 @@ module.exports = function(app){
 			res.send(error.data);
 		})
 	});
-
+	// route to fetch a claim by uri
 	app.get("/get/:name", function(req, res){
     	var name = req.params.name;
 		//'get' the image to display them.
@@ -95,7 +92,7 @@ module.exports = function(app){
 		})
 	});
 
-	app.use("*", function(req, res){
+	app.use("/", function(req, res){
     	//res.sendFile('index.html');
 		res.sendFile(path.join(__dirname, '../public', 'index.html'));
 	});
