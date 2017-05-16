@@ -1,5 +1,5 @@
-# spee.ch-backend
-javascript backend for spee.ch
+# spee.ch (js)
+this is a clone of spee.ch with a javascript backend
 
 ## how to use this repository
 * install the `lbry` daemon or app
