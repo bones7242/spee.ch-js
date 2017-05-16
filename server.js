@@ -7,8 +7,8 @@ var PORT = 3000;
 // initialize express
 var app = express();
 // configure epress
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());  // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 // require in routes
 require("./routes/api-routes.js")(app);
 require("./routes/html-routes.js")(app);

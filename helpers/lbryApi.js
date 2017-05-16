@@ -38,6 +38,22 @@ function orderTopClaims(claimsListArray){
 }
 
 module.exports = {
+	publishClaim: function(publishObject, res){
+		axios.post('http://localhost:5279/lbryapi', publishObject)
+		.then(function (response) {
+			// receive resonse from LBRY
+			// if successfull, (1) delete file (2) send response to the client
+			console.log(">> 'publish' success...");
+			console.log(">> 'publish' response.data:", response.data);
+			// return the claim we got 
+			res.status(200).send(JSON.stringify({msg: "you succsessfully published!", txData: response.data}));
+		}).catch(function(error){
+			// receive response from LBRY
+			// if not successfull, (1) delete file and (2) send response to the client
+			console.log(">> 'publish' error.response.data:", error.response.data);
+			res.status(500).send(JSON.stringify({msg: "your file was not published", err: error.response.data.error.message}));
+		})
+	},
 	serveClaimBasedOnNameOnly: function(claimName, res){
 		// make a call to the daemon to get the claims list 
 		axios.post('http://localhost:5279/lbryapi', {
@@ -51,14 +67,14 @@ module.exports = {
 			console.log(">> Number of claims:", response.data.result.claims.length)
 			// return early if no claims were found
 			if (response.data.result.claims.length === 0){
-				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				res.status(200).sendFile(path.join(__dirname, '../public', 'noClaims.html'));
 				return;
 			}
 			// filter the claims to return free, public claims 
 			var freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
 			// return early if no free, public claims were found
 			if (!freePublicClaims || (freePublicClaims.length === 0)){
-				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				res.status(200).sendFile(path.join(__dirname, '../public', 'noClaims.html'));
 				return;
 			}
 			// order the claims
@@ -79,14 +95,14 @@ module.exports = {
 				console.log(">> response data:", getResponse.data);
 				console.log(">> dl path =", getResponse.data.result.download_path)
 				// return the claim we got 
-				res.sendFile(getResponse.data.result.download_path);
+				res.status(200).sendFile(getResponse.data.result.download_path);
 			}).catch(function(getError){
-				console.log(">> /c/ 'get' error:", getError);
-				res.send(getError);
+				console.log(">> /c/ 'get' error:", getError.response.data);
+				res.status(500).send(JSON.stringify({msg: "An error occurred while fetching the free, public claim by URI.", err: getError.response.data.error.message}));
 			})
 		}).catch(function(error){
-			console.log(">> /c/ error:", error);
-			res.send(error);
+			console.log(">> /c/ error:", error.response.data);
+			res.status(500).send(JSON.stringify({msg: "An error occurred while getting the claim list.", err: error.response.data.error.message}));
 		})
 	},
 	serveClaimBasedOnUri: function(uri, res){  
@@ -106,10 +122,13 @@ module.exports = {
 			console.log(">> response data:", getResponse.data);
 			console.log(">> dl path =", getResponse.data.result.download_path)
 			// return the claim we got 
-			res.sendFile(getResponse.data.result.download_path);
-		}).catch(function(getError){
-			console.log(">> /c/ 'get' error:", getError);
-			res.send(getError);
+			res.status(200).sendFile(getResponse.data.result.download_path);
+
+			/* delete the file after a certain amount of time? */
+
+		}).catch(function(error){
+			console.log(">> /c/ 'get' error:", error.response.data);
+			res.status(500).send(JSON.stringify({msg: "an error occurred", err: error.response.data.error.message}));
 		})
 	},
 	serveAllClaims: function(claimName, res){
@@ -125,14 +144,14 @@ module.exports = {
 			console.log(">> Number of claims:", response.data.result.claims.length)
 			// return early if no claims were found
 			if (response.data.result.claims.length === 0){
-				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				res.status(200).sendFile(path.join(__dirname, '../public', 'noClaims.html'));
 				return;
 			}
 			// filter the claims to return free, public claims 
 			var freePublicClaims = filterForFreePublicClaims(response.data.result.claims);
 			// return early if no free, public claims were found
 			if (!freePublicClaims || (freePublicClaims.length === 0)){
-				res.sendFile(path.join(__dirname, '../public', 'noClaims.html'));
+				res.status(200).sendFile(path.join(__dirname, '../public', 'noClaims.html'));
 				return;
 			}
 			console.log(">> Number of free public claims:", freePublicClaims.length);
@@ -141,10 +160,10 @@ module.exports = {
 			/*
 			 NOTE: add code to display a page of all these claims 
 			*/
-			res.send(orderedPublicClaims);
+			res.status(200).send(orderedPublicClaims);
 		}).catch(function(error){
-			console.log(">> /c/ error:", error);
-			res.send(error);
+			console.log(">> /c/ error:", error.response.data);
+			res.status(500).send(JSON.stringify({msg: "An error occurred while finding the claim list.", err: error.response.data.error.message}));
 		})
 	}
 }
