@@ -20,7 +20,6 @@ this is a clone of spee.ch with a javascript backend
 * spee.ch/< the name of the claim >/< the claim_id >
 	* To view a specific file at a claim
 	* E.g. spee.ch/doitlive/c496c8c55ed79816fec39e36a78645aa4458edb5
-	* E.g. spee.ch/doitlive/c496c8c55ed79816fec39e36a78645aa4458edb5
 * spee.ch/<the name of the claim>/all
 	* To view a batch of files at a claim
 	* E.g. spee.ch/doitlive/all
