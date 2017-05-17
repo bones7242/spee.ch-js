@@ -5,10 +5,10 @@ var lbryApi = require('../helpers/lbryApi.js');
 // routes to export
 module.exports = function(app){
 	// route to fetch one free public claim 
-	app.get("/favicon.ico", function(req, res){
-		console.log(">> GET request on favicon.ico");
-		res.sendFile(path.join(__dirname, '../public', 'favicon.ico'));
-	});
+	// app.get("/favicon.ico", function(req, res){
+	// 	console.log(">> GET request on favicon.ico");
+	// 	res.sendFile(path.join(__dirname, '../public', 'favicon.ico'));
+	// });
 	// route to fetch one free public claim 
 	app.get("/:name/all", function(req, res){
     	var name = req.params.name;

@@ -3,9 +3,11 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
 // set port
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 // initialize express
 var app = express();
+// make express look in the public directory for assets (css/js/img)
+app.use(express.static(__dirname + '/public'));
 // configure epress
 app.use(bodyParser.json());  // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
