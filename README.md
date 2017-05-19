@@ -2,13 +2,13 @@
 this is a clone of spee.ch with a javascript backend
 
 ## how to use this repository
-* install the `lbry` daemon or app
-* start your `lbry` daemon or app
+* install the [`lbry`](https://github.com/lbryio/lbry) daemon
+* start the `lbry` daemon
 * clone this repo 
 * run `npm install`
 * from your terminal, run `npm start`
 	* to run hot, run `nodemon server.js`
-* visit [localhost://3000](http://localhost://3000)
+* visit [localhost:3000](http://localhost:3000)
 
 ## Site Navigation
 
