@@ -38,20 +38,22 @@ function orderTopClaims(claimsListArray){
 }
 
 module.exports = {
-	publishClaim: function(publishObject, res){
+	publishClaim: function(publishObject){
 		axios.post('http://localhost:5279/lbryapi', publishObject)
 		.then(function (response) {
 			// receive resonse from LBRY
 			// if successfull, (1) delete file (2) send response to the client
 			console.log(">> 'publish' success...");
 			console.log(">> 'publish' response.data:", response.data);
+			console.log(" [x] Done");
 			// return the claim we got 
-			res.status(200).send(JSON.stringify({msg: "you succsessfully published!", txData: response.data}));
+			//res.status(200).send(JSON.stringify({msg: "you succsessfully published!", txData: response.data}));
 		}).catch(function(error){
 			// receive response from LBRY
 			// if not successfull, (1) delete file and (2) send response to the client
 			console.log(">> 'publish' error.response.data:", error.response.data);
-			res.status(500).send(JSON.stringify({msg: "your file was not published", err: error.response.data.error.message}));
+			console.log(" [x] Done");
+			//res.status(500).send(JSON.stringify({msg: "your file was not published", err: error.response.data.error.message}));
 		})
 	},
 	serveClaimBasedOnNameOnly: function(claimName, res){

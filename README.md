@@ -2,13 +2,17 @@
 this is a clone of spee.ch with a javascript backend
 
 ## how to use this repository
-* install the [`lbry`](https://github.com/lbryio/lbry) daemon
-* start the `lbry` daemon
-* clone this repo 
+* start lbry
+	* install the [`lbry`](https://github.com/lbryio/lbry) daemon
+	* start the `lbry` daemon
+* start RabbitMQ (this will handle the queue for background processing)
+	* install & run [RabbitMQ](https://www.rabbitmq.com/#getstarted)
+* clone this repo
 * run `npm install`
 * from your terminal, run `npm start`
 	* to run hot, run `nodemon server.js`
-* visit [localhost:3000](http://localhost:3000)
+* start at least one worker by running `node worker.js`
+* visit [localhost:3000](http://localhost:3000) and enjoy!
 
 ## Site Navigation
 
