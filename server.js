@@ -3,7 +3,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
 // set port
-var PORT = process.env.PORT || 3000;
+var PORT = 80;
 // initialize express
 var app = express();
 // make express look in the public directory for assets (css/js/img)
