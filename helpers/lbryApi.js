@@ -109,11 +109,11 @@ module.exports = {
 	},
 	serveClaimBasedOnUri: function(uri, res){  
 		/* 
-		NOTE: need to make pass the URI through a test to see if it is free and public
+			to do: need to pass the URI through a test (use 'resolve') to see if it is free and public. Right now it is jumping straight to 'get'ing and serving the asset.
 		*/
 		console.log(">> your uri:", uri);
 		// fetch the image to display
-		axios.post('http://localhost:5279/lbryapi', {
+		axios.post('http://localhost:5279/lbryapi', {  // to do: abstract this code to a function that can be shared
 				method: "get",
 				params: {
 					uri: uri
@@ -123,6 +123,9 @@ module.exports = {
 			console.log(">> 'get claim' success...");
 			console.log(">> response data:", getResponse.data);
 			console.log(">> dl path =", getResponse.data.result.download_path)
+			/* 
+				to do: make sure the file has completed downloading before serving back the file 
+			*/
 			// return the claim we got 
 			res.status(200).sendFile(getResponse.data.result.download_path);
 
@@ -159,12 +162,11 @@ module.exports = {
 			console.log(">> Number of free public claims:", freePublicClaims.length);
 			// order the claims
 			var orderedPublicClaims = orderTopClaims(freePublicClaims);
-			/*
-			 NOTE: add code to display a page of all these claims 
-			*/
-			res.status(200).send(orderedPublicClaims);
+			// serve the response
+			res.status(200).send(orderedPublicClaims); //to do: rather than returning json, serve a page of all these claims 
 		}).catch(function(error){
 			console.log(">> /c/ error:", error.response.data);
+			// serve the response
 			res.status(500).send(JSON.stringify({msg: "An error occurred while finding the claim list.", err: error.response.data.error.message}));
 		})
 	}
