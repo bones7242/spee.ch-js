@@ -14,7 +14,7 @@ this is a clone of spee.ch with a javascript backend
 * start at least one worker by running `node worker.js`
 * visit [localhost:3000](http://localhost:3000) and enjoy!
 
-## Site Navigation
+## site navigation
 
 * spee.ch.
 	* To publish a file, navigate to the homepage.
@@ -29,12 +29,11 @@ this is a clone of spee.ch with a javascript backend
 	* E.g. spee.ch/doitlive/all
 
 ## development to-do's
-* terms of service?
 * discover/explore functionality for home page
 * display a list of claims at /:name/all
-* publish: a temp page while the request is made to the server (with a loading bar?)
-* publish: after publishing, take the user to a temp page with the tx info and status of the tx (then redirect when the tx is complete)
-* what about the fact that it over-writes uploads of the same name (e.g. sally uses it to upload coconuts pic 1 and fred uses it to upload coconuts pic 2.).  will this cause a problem because spee.ch will be the author for both transactions so fred will override sally?
+* fetching: a temporary page while the request is being made (with a loading bar?)
+* publishing: a temporary page while the request is being handled by the server (with a loading bar?)
+* publishing: after publishing, take the user to a temp page with the tx info and status of the tx (then redirect when the tx is complete)
 
 ## API
 
